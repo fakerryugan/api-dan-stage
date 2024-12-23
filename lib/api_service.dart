@@ -1,28 +1,21 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:percobaan1/class.dart';
 
-class ApiService {
-  Future<List<dynamic>> fetchPhotos() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? cacheData = prefs.getString('photos');
+class WeatherService {
+  final String apiKey = 'a004676df2ecaa302f79f18ba1c29405';
 
-      if (cacheData != null) {
-        return json.decode(cacheData) as List<dynamic>;
-      } else {
-        final response = await http
-            .get(Uri.parse('https://jsonplaceholder.typicode.com/photos'));
+  Future<Weather> fetchWeather(String city) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric'),
+    );
 
-        if (response.statusCode == 200) {
-          prefs.setString('photos', response.body);
-          return json.decode(response.body) as List<dynamic>;
-        } else {
-          throw Exception('Gagal memuat data');
-        }
-      }
-    } catch (e) {
-      throw Exception('Kesalahan: $e');
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      return Weather.fromJson(jsonData); // Gunakan fromJson untuk konversi
+    } else {
+      throw Exception('Gagal memuat data cuaca');
     }
   }
 }
